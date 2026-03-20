@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clustering e PCA</title>
+
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="../libs/tex-svg.js"></script>
+  <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body style="background-color: rgb(220, 220, 220);">
+  <h2>Reduzindo dimensionalidade com clustering</h2>
+  <p>
+  Basta agrupar as colunas
+  </p>
+  <div class="matrix-container">
+    <div>
+      \[
+      \begin{bmatrix}
+      x_{1,1} & x_{1,2} & x_{1,3} \\
+      x_{2,1} & x_{2,2} & x_{2,3} \\
+      \vdots  & \vdots  & \vdots  \\
+      x_{n,1} & x_{n,2} & x_{n,3}
+      \end{bmatrix}
+      \]
+    </div>
+    <div>\[\to\]</div>
+    <div>
+      \[
+      \begin{bmatrix}
+      x_{1,1} & x_{2,1} & \cdots & x_{n,1} \\
+      x_{1,2} & x_{2,2} & \cdots & x_{n,2} \\
+      x_{1,3} & x_{2,3} & \cdots & x_{n,3}
+      \end{bmatrix}
+      \]
+    </div>
+  </div>
+
+  <div id="help-overlay">
+    <div class="help-box">
+      <div class="help-header">
+        <span>Teclas Mapeadas</span>
+        <button id="help-close">×</button>
+      </div>
+      <ul>
+        <li><strong>h</strong> - Mostra ou esconde esse menu de ajuda</li>
+        <li><strong>→</strong> - Próximo slide</li>
+        <li><strong>←</strong> - Slide anterior</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+  document.addEventListener("keydown", e => {
+    if (e.key === "ArrowLeft") location.assign("../page_6/index.html");
+    if (e.key === "ArrowRight") location.assign("../page_8/index.html");
+    if (e.key.toLowerCase() === "h") {
+      const overlay = document.getElementById("help-overlay");
+      overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
+    }
+  });
+  
+  document.getElementById("help-close").addEventListener("click", () => {
+    document.getElementById("help-overlay").style.display = "none";
+  });
+  </script>
+</body>
+</html>

@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clustering e PCA</title>
+
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="../libs/tex-svg.js"></script>
+  <script src="../libs/p5.min.js"></script>
+  <script src="sketch.js"></script>
+  <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+  <div class="text-container" style="text-align: left;">
+    <h2>Referências</h2>
+    <ol>
+      <li>
+        MacQueen, J. B. (1967). <em>Some Methods for Classification and Analysis of Multivariate Observations</em>.
+      </li>
+      <li>
+        Ding, C., &amp; He, X. (2004).
+        <em>K-means Clustering via Principal Component Analysis</em>.
+      </li>
+      <li>
+        Jolliffe, I. T. (2002).
+        <em>Principal Component Analysis</em>, Section 9.2.
+      </li>
+      <li>
+        Johnson, R. A., &amp; Wichern, D. W. (2002).
+        <em>Applied Multivariate Statistical Analysis</em> (5th ed.).
+      </li>
+      <li>
+        James, G., Witten, D., Hastie, T., &amp; Tibshirani, R. (2013).
+        <em>An Introduction to Statistical Learning: With Applications in R</em>.
+      </li>
+      <li>
+        Izbicki, R., &amp; dos Santos, T. M. (2020).
+        <em>Aprendizado de Máquina: Uma Abordagem Estatística</em> (1ª ed.).
+        Disponível em:
+        <a href="https://rafaelizbicki.com/ame/" target="_blank">https://rafaelizbicki.com/ame/</a>.
+      </li>
+    </ol>
+  </div>
+
+  <div id="canvas-container" style="container">
+    <div id="sketch"></div>
+  </div>
+
+  <div id="help-overlay">
+    <div class="help-box">
+      <div class="help-header">
+        <span>Teclas Mapeadas</span>
+        <button id="help-close">×</button>
+      </div>
+      <ul>
+        <li><strong>h</strong> - Mostra ou esconde esse menu de ajuda</li>
+        <li><strong>→</strong> - Próximo slide</li>
+        <li><strong>←</strong> - Slide anterior</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

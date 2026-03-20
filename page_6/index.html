@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clustering e PCA</title>
+
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="../libs/tex-svg.js"></script>
+  <script src="../libs/p5.min.js"></script>
+  <script src="sketch.js"></script>
+  <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+  <input type="file" id="hidden-upload" style="display: none;" accept=".png,.jpeg,.jpg">
+  <div id="canvas-container" style="container">
+    <div id="sketch"></div>
+  </div>
+
+  <div id="help-overlay">
+    <div class="help-box">
+      <div class="help-header">
+        <span>Teclas Mapeadas</span>
+        <button id="help-close">×</button>
+      </div>
+      <ul>
+        <li><strong>h</strong> - Mostra ou esconde esse menu de ajuda</li>
+        <li><strong>→</strong> - Próximo slide</li>
+        <li><strong>←</strong> - Slide anterior</li>
+        <li><strong>↑</strong> - Cria novos clusters e reseta o algoritmo</li>
+        <li><strong>↓</strong> - Avança um passo no algoritmo</li>
+
+        <li><strong>u</strong> - Faz upload de uma imagem</li>
+        <li><strong>w</strong> - Aumenta o número de cores</li>
+        <li><strong>s</strong> - Diminui o número de cores</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

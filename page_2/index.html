@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clustering e PCA</title>
+
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="../libs/tex-svg.js"></script>
+  <script src="../libs/p5.min.js"></script>
+  <script src="sketch.js"></script>
+  <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body>
+  <h2>Clustering Baseado em Centróides</h2>
+  <div class="text-container">
+    <p>
+      Seja $A = \{a_0, ..., a_n\}$ um conjunto de dados.
+      Queremos particionar $A$ em uma família $\{A_1, A_2, ..., A_k\}$
+      de forma que minimizamos a <i>variabilidade</i> de cada partição:
+    </p>
+    <p>
+      $$ \text{variabilidade}(A_i) := \sum_{x \in A_i} \| \overline{A_i} - x \|^2. $$
+    </p>
+    <p>
+      Onde $\overline{A_i} = \frac{1}{|A_i|}\sum_{x \in A_i} x$ é a média dos pontos
+      da partição $A_i$. Veja que:
+      $$ \text{variabilidade}(A_i) = \sigma^2(A_i) \cdot |A_i|. $$
+    </p>
+  </div>
+
+  <div id="canvas-container" style="container">
+    <div id="sketch"></div>
+  </div>
+
+  <div id="help-overlay">
+    <div class="help-box">
+      <div class="help-header">
+        <span>Teclas Mapeadas</span>
+        <button id="help-close">×</button>
+      </div>
+      <ul>
+        <li><strong>h</strong> - Mostra ou esconde esse menu de ajuda</li>
+        <li><strong>→</strong> - Próximo slide</li>
+        <li><strong>←</strong> - Slide anterior</li>
+        <li><strong>↑</strong> - Cria novos clusters</li>
+      </ul>
+    </div>
+  </div>
+</body>
+</html>

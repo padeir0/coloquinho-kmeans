@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" style="display:none">
+  <symbol id="icon-play" viewBox="0 0 24 24">
+    <path d="M8 5v14l11-7z" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-pause" viewBox="0 0 24 24">
+    <rect x="6" y="5" width="4" height="14" rx="1" fill="currentColor"/>
+    <rect x="14" y="5" width="4" height="14" rx="1" fill="currentColor"/>
+  </symbol>
+  <symbol id="icon-next" viewBox="0 0 24 24">
+    <path d="M9 6l6 6-6 6" />
+  </symbol>
+  <symbol id="icon-previous" viewBox="0 0 24 24">
+    <path d="M15 6l-6 6 6 6" />
+  </symbol>
+  <symbol id="icon-fullscreen" viewBox="0 0 24 24">
+    <path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5" />
+  </symbol>
+  <symbol id="icon-home" viewBox="0 0 24 24">
+    <path d="M3 11l9-7 9 7" />
+    <path d="M5 10v10h14V10" />
+    <path d="M9 21V14h6v7" />
+  </symbol>
+</svg>

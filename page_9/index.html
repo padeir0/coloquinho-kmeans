@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Clustering e PCA</title>
+
+  <script>
+    window.MathJax = {
+      tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] },
+      svg: { fontCache: 'global' }
+    };
+  </script>
+  <script src="../libs/tex-svg.js"></script>
+  <script src="../libs/p5.min.js"></script>
+  <script src="sketch.js"></script>
+  <link rel="stylesheet" type="text/css" href="../style.css">
+</head>
+<body style="background-color: rgb(220, 220, 220);">
+  <div class="text-container">
+    <h2>Conclusão</h2>
+    <p>Clustering e PCA são técnicas complementares de análise de dados multivariada.</p>
+  </div>
+
+  <div id="canvas-container" style="container">
+    <div id="sketch"></div>
+  </div>
+
+  <div id="help-overlay">
+    <div class="help-box">
+      <div class="help-header">
+        <span>Teclas Mapeadas</span>
+        <button id="help-close">×</button>
+      </div>
+      <ul>
+        <li><strong>h</strong> - Mostra ou esconde esse menu de ajuda</li>
+        <li><strong>→</strong> - Próximo slide</li>
+        <li><strong>←</strong> - Slide anterior</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp") debug();
+      if (e.key === "ArrowLeft") location.assign("../page_8/index.html");
+      if (e.key === "ArrowRight") location.assign("../page_10/index.html");
+      if (e.key.toLowerCase() === "h") {
+        const overlay = document.getElementById("help-overlay");
+        overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
+      }
+    });
+
+    document.getElementById("help-close").addEventListener("click", () => {
+      document.getElementById("help-overlay").style.display = "none";
+    });
+  </script>
+</body>
+</html>
