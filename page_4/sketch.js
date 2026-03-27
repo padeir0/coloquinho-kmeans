@@ -11,12 +11,23 @@ const maxDistanceToCenter = centerExclusionZoneRadius + 50;
 const defaultAlpha = 32;
 const centroidAlpha = 250;
 
+let pointsPerClick = 20;
+const maxPerClick = 100;
+const minPerClick = 1;
+
+let brushSpread = 50;
+const minSpread = 1;
+const maxSpread = 200;
+
+let isCentroid = false;
+
 let step = 0;
 let points = [];
 let centroids = [];
 let clusters = [];
 let defaultColor;
-let currentChoice;
+let defaultCentroidColor;
+let currentChoice = 0;
 
 class Point {
   constructor (pos, color) {
@@ -41,6 +52,16 @@ function star(x, y, r) {
     vertex(sx, sy);
   }
   endShape(CLOSE);
+}
+
+function bottomText(txt) {
+  push();
+  textAlign(CENTER, BOTTOM);
+  textSize(20);         // Adjust to your preference
+  fill(0);              // Default text color
+  noStroke();
+  text(txt, width / 2, height); // 20px padding from bottom
+  pop();
 }
 
 function withAlpha(c, a) {
@@ -224,28 +245,22 @@ function verifyTermination() {
 }
 
 function reset() {
-  points = [];
-  centroids = [];
   clusters = [];
-
-  let center = createVector(width/2, height/2);
-  let radius = random(minClusterRadius, maxClusterRadius);
-  let numPoints = randint(minClusterPoints, maxClusterPoints);
-  for (let i = 0; i < numClusters; i++) {
-    circularCloud(center, radius, numPoints);
-    radius += radius;
-    numPoints += numPoints;
-  }
-
   step = 0;
   redraw();
+  for (let i = 0; i < points.length; i++) {
+    let p = points[i];
+    p.color = defaultColor;
+  }
+}
+
+function clearCanvas() {
+  points = [];
+  centroids = [];
+  reset();
 }
 
 function createCentroids() {
-  for (let i = 0; i < numClusters; i++) {
-    let centroid = randomVecInCanvas();
-    centroids.push(centroid);
-  }
   createClusters(centroids);
 }
 
@@ -290,8 +305,6 @@ function setup() {
   p5Canvas.style('z-index', '-1');
   p5Canvas.style('position', 'fixed');
 
-  codeLines = document.querySelectorAll('.code-line');
-
   document.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") reset();
     if (e.key === "ArrowDown") nextStep();
@@ -300,6 +313,24 @@ function setup() {
     if (e.key.toLowerCase() === "h") {
       const overlay = document.getElementById("help-overlay");
       overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
+    }
+    if (e.key.toLowerCase() === "c") {
+      isCentroid = !isCentroid;
+    }
+    if (e.key.toLowerCase() === "l") {
+      clearCanvas();
+    }
+    if (e.key.toLowerCase() === "w") {
+      pointsPerClick = min(maxPerClick, pointsPerClick+1);
+    }
+    if (e.key.toLowerCase() === "s") {
+      pointsPerClick = max(minPerClick, pointsPerClick-1);
+    }
+    if (e.key.toLowerCase() === "a") {
+      brushSpread = max(minSpread, brushSpread-1);
+    }
+    if (e.key.toLowerCase() === "d") {
+      brushSpread = min(maxSpread, brushSpread+1);
     }
   });
   
@@ -321,7 +352,7 @@ function setup() {
   ];
 
   defaultColor = color(192, 0, 0, defaultAlpha);
-  noLoop();
+  defaultCentroidColor = color(0, 0, 0);
   frameRate(fps);
   reset();
 }
@@ -332,9 +363,14 @@ function draw() {
     let point = points[i];
     drawPoint(point);
   }
+  for (let i = 0; i < centroids.length; i++) {
+    let centroid = centroids[i];
+    drawCentroid(centroid, defaultCentroidColor);
+  }
   for (let i = 0; i < clusters.length; i++) {
     clusters[i].draw();
   }
+  bottomText(`dados por clique: ${pointsPerClick}, tamanho do pincel: ${brushSpread}, centroid: ${isCentroid}\n`);
 }
 
 function windowResized() {
@@ -344,7 +380,40 @@ function windowResized() {
   redraw();
 }
 
+function clickHandler(mouseX, mouseY) {
+  let pos = createVector(mouseX, mouseY)
+  if (isCentroid) {
+    // sempre queremos apenas um centroide.
+    centroids.push(pos);
+  } else {
+    if (pointsPerClick == 1) {
+      // queremos ser precisos nesse caso
+      points.push(new Point(pos, defaultColor));
+    } else {
+      for (let i = 0; i < pointsPerClick; i++) {
+        let r = createVector(random(-brushSpread, brushSpread), random(-brushSpread, brushSpread));
+        let newPos = p5.Vector.add(pos, r);
+        points.push(new Point(newPos, defaultColor));
+      }
+    }
+  }
+}
+
 function inBounds(x, y) {
   return x >= 0 && y >= 0 &&
          x <= width && y <= height;
+}
+
+function mousePressed() {
+  if (inBounds(mouseX, mouseY)) {
+    clickHandler(mouseX, mouseY);
+  }
+}
+
+function touchStarted() {
+  if (inBounds(mouseX, mouseY)) {
+    clickHandler(mouseX, mouseY);
+    return false;
+  }
+  return true;
 }
