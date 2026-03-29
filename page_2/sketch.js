@@ -1,39 +1,19 @@
-const fps = 1;
+const fps = 20;
 const circleSize = 20;
-const numClusters = 5;
+const numClusters = 20;
 
 const minPointsPerCluster = 10;
-const maxPointsPerCluster = 20;
+const maxPointsPerCluster = 80;
 
-const minInitialRadius = 30;
+const minInitialRadius = 10;
 const maxInitialRadius = 50;
 
-const maxRadius = maxInitialRadius;
+const maxRadius = maxInitialRadius+10;
 
-const centerExclusionZoneRadius = 500;
-const maxDistanceToCenter = centerExclusionZoneRadius + 50;
+const centerExclusionZoneRadius = 200;
+const maxDistanceToCenter = centerExclusionZoneRadius + 300;
 
 let clusters = [];
-
-function star(p, r) {
-  let x = p.x;
-  let y = p.y;
-  const npoints = 8;
-  const radius1 = r/2;
-  const radius2 = radius1 / 2;
-  let angle = TWO_PI / npoints;
-  let halfAngle = angle / 2.0;
-  beginShape();
-  for (let a = 0; a < TWO_PI; a += angle) {
-    let sx = x + cos(a) * radius2;
-    let sy = y + sin(a) * radius2;
-    vertex(sx, sy);
-    sx = x + cos(a + halfAngle) * radius1;
-    sy = y + sin(a + halfAngle) * radius1;
-    vertex(sx, sy);
-  }
-  endShape(CLOSE);
-}
 
 function randomOrthoPair(maxRadius) {
   let x = random(-maxRadius, maxRadius);
@@ -70,14 +50,10 @@ function goodPosition(p) {
          p.y < 0 || p.y > height;
 }
 
-// TODO: fix this mess, take the center of the screen and apply a
-// random angle to it plus some offset noise.
 function randomVecInCanvas() {
   let out = createVector(random(0, width), random(0, height));
-  let i = 0;
-  while (goodPosition(out) && i < 20) {
+  while (goodPosition(out)) {
     out = createVector(random(0, width), random(0, height));
-    i++;
   }
   return out;
 }
@@ -86,8 +62,7 @@ class Cluster {
   constructor (center, numPoints, initialRadius) {
     this.center = center;
     this.points = pointCloud(center, initialRadius, numPoints);
-    this.centroid = this.findCentroid();
-    this.fade = max(0.1, 1 - (this.deviation() / maxRadius));
+    this.fade = max(0, 1 - (this.deviation() / maxRadius));
   }
 
   deviation() {
@@ -97,27 +72,14 @@ class Cluster {
     }
     return out/this.points.length;
   }
-
-  findCentroid() {
-    let out = createVector(0, 0);
-    for (let i = 0; i < this.points.length; i++) {
-      let p = this.points[i];
-      out.add(p);
-    }
-    out.mult(1.0 / this.points.length);
-    return out;
-  }
-
+  
   draw() {
     for (let i = 0; i < this.points.length; i++) {
       let p = this.points[i];
       noStroke();
-      fill(128, 0, 0, this.fade*192);
+      fill(128, 0, 0, this.fade*240);
       circle(p.x, p.y, circleSize);
     }
-    fill(0, 0, 128);
-    star(this.centroid, circleSize);
-    fill(128, 0, 0, this.fade*192);
   }
 }
 
@@ -148,9 +110,6 @@ function setup() {
   p5Canvas.style('z-index', '-1');
   p5Canvas.style('position', 'fixed');
 
-  frameRate(fps);
-  generateClusters();
-
   document.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") generateAndRedraw();
     if (e.key === "ArrowLeft") location.assign("../page_1/index.html");
@@ -165,6 +124,8 @@ function setup() {
     document.getElementById("help-overlay").style.display = "none";
   });
 
+  frameRate(fps);
+  generateClusters();
   noLoop();
 }
 
@@ -177,5 +138,5 @@ function draw() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  generateClusters();
+  generateAndRedraw();
 }

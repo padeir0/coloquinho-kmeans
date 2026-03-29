@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>K-Means</title>
+  <title>Clustering e PCA</title>
 
   <script>
     window.MathJax = {
@@ -12,36 +12,41 @@
     };
   </script>
   <script src="../libs/tex-svg.js"></script>
-  <script src="../libs/p5.min.js"></script>
-  <script src="sketch.js"></script>
   <link rel="stylesheet" type="text/css" href="../style.css">
 </head>
-<body>
-  <div class="text-container" style="text-align: left;">
-    <h2>Referências</h2>
-    <ol>
-      <li>
-        MacQueen, J. B. (1967). <em>Some Methods for Classification and Analysis of Multivariate Observations</em>.
-      </li>
-      <li>
-        Johnson, R. A., &amp; Wichern, D. W. (2002).
-        <em>Applied Multivariate Statistical Analysis</em> (5th ed.).
-      </li>
-      <li>
-        James, G., Witten, D., Hastie, T., &amp; Tibshirani, R. (2013).
-        <em>An Introduction to Statistical Learning: With Applications in R</em>.
-      </li>
-      <li>
-        Izbicki, R., &amp; dos Santos, T. M. (2020).
-        <em>Aprendizado de Máquina: Uma Abordagem Estatística</em> (1ª ed.).
-        Disponível em:
-        <a href="https://rafaelizbicki.com/ame/" target="_blank">https://rafaelizbicki.com/ame/</a>.
-      </li>
-    </ol>
-  </div>
-
-  <div id="canvas-container" style="container">
-    <div id="sketch"></div>
+<body style="background-color: rgb(220, 220, 220);">
+  <div class="text-container">
+    <h2>Variáveis altamente correlacionadas</h2>
+    <table style="border-collapse: collapse; font-size: 1.2rem; margin-bottom: 20px;">
+      <thead>
+        <tr>
+          <th>Temp, Nivel do mar (°C)</th>
+          <th>Temp, 500m (°C)</th>
+          <th>Temp, 1000m (°C)</th>
+          <th>Altura das nuvens<br>(metros)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>30</td>
+          <td>25</td>
+          <td>20</td>
+          <td>800</td>
+        </tr>
+        <tr>
+          <td>29</td>
+          <td>24</td>
+          <td>19</td>
+          <td>900</td>
+        </tr>
+        <tr>
+          <td>18</td>
+          <td>14</td>
+          <td>10</td>
+          <td>1200</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <div id="help-overlay">
@@ -57,5 +62,20 @@
       </ul>
     </div>
   </div>
+  <script>
+    document.addEventListener("keydown", e => {
+      if (e.key === "ArrowUp") reset();
+      if (e.key === "ArrowLeft") location.assign("../page_9/index.html");
+      if (e.key === "ArrowRight") location.assign("../page_11/index.html");
+      if (e.key.toLowerCase() === "h") {
+        const overlay = document.getElementById("help-overlay");
+        overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
+      }
+    });
+
+    document.getElementById("help-close").addEventListener("click", () => {
+      document.getElementById("help-overlay").style.display = "none";
+    });
+  </script>
 </body>
 </html>

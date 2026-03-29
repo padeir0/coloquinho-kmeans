@@ -16,12 +16,8 @@
   <script src="sketch.js"></script>
   <link rel="stylesheet" type="text/css" href="../style.css">
 </head>
-<body style="background-color: rgb(220, 220, 220);">
-  <div class="text-container">
-    <h2>Conclusão</h2>
-    <p>K-Means é um algoritmo simples e eficiente para clustering de dados, desde que suas limitações sejam respeitadas.</p>
-  </div>
-
+<body>
+  <h2>K-Means otimiza clusters esféricos</h2>
   <div id="canvas-container" style="container">
     <div id="sketch"></div>
   </div>
@@ -36,24 +32,10 @@
         <li><strong>h</strong> - Mostra ou esconde esse menu de ajuda</li>
         <li><strong>→</strong> - Próximo slide</li>
         <li><strong>←</strong> - Slide anterior</li>
+        <li><strong>↑</strong> - Cria novos clusters e reseta o algoritmo</li>
+        <li><strong>↓</strong> - Avança um passo no algoritmo</li>
       </ul>
     </div>
   </div>
-
-  <script>
-    document.addEventListener("keydown", e => {
-      if (e.key === "ArrowUp") debug();
-      if (e.key === "ArrowLeft") location.assign("../page_8/index.html");
-      if (e.key === "ArrowRight") location.assign("../page_10/index.html");
-      if (e.key.toLowerCase() === "h") {
-        const overlay = document.getElementById("help-overlay");
-        overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
-      }
-    });
-
-    document.getElementById("help-close").addEventListener("click", () => {
-      document.getElementById("help-overlay").style.display = "none";
-    });
-  </script>
 </body>
 </html>

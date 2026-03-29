@@ -1,32 +1,22 @@
 const circleSize = 30;
 const minClusterRadius = 30;
-const maxClusterRadius = 50;
+const maxClusterRadius = 80;
 const minClusterPoints = 20;
-const maxClusterPoints = 30;
-const numClusters = 4;
+const maxClusterPoints = 50;
+const numClusters = 5;
 const fps = 20;
-const centerExclusionZoneRadius = 200;
+const centerExclusionZoneRadius = 300;
 const maxDistanceToCenter = centerExclusionZoneRadius + 50;
 
-const defaultAlpha = 32;
+const defaultAlpha = 64;
 const centroidAlpha = 250;
-
-let pointsPerClick = 20;
-const maxPerClick = 100;
-const minPerClick = 1;
-
-let brushSpread = 50;
-const minSpread = 1;
-const maxSpread = 200;
-
-let isCentroid = false;
 
 let step = 0;
 let points = [];
 let centroids = [];
 let clusters = [];
 let defaultColor;
-let defaultCentroidColor;
+let codeLines;
 let currentChoice = 0;
 
 class Point {
@@ -34,6 +24,10 @@ class Point {
     this.pos = pos;
     this.color = color;
   }
+}
+
+function withAlpha(c, a) {
+  return color(red(c), green(c), blue(c), a);
 }
 
 function star(x, y, r) {
@@ -54,36 +48,27 @@ function star(x, y, r) {
   endShape(CLOSE);
 }
 
-function bottomText(txt) {
-  push();
-  textAlign(CENTER, BOTTOM);
-  textSize(20);         // Adjust to your preference
-  fill(0);              // Default text color
-  noStroke();
-  text(txt, width / 2, height); // 20px padding from bottom
-  pop();
-}
-
-function withAlpha(c, a) {
-  return color(red(c), green(c), blue(c), a);
-}
-
 function randint(lower, upper) {
   return floor(random(lower, upper));
 }
 
-function circularCloud(center, radius, numPoints) {
-  const noise = 5;
+function randomOrthoPair(maxRadius) {
+  let x = random(-maxRadius, maxRadius);
+  let y = random(-maxRadius, maxRadius);
+  let v1 = createVector(x, y);
+  let v2 = createVector(-y, x);
+  return {"axis1": v1, "axis2": v2}
+}
 
-  let minAngle = 0;
-  let maxAngle = 2*PI;
-
+function pointCloud(center, maxRadius, numPoints) {
+  let pair = randomOrthoPair(maxRadius);
   for (let i = 0; i < numPoints; i++) {
-    let angle = random(minAngle, maxAngle);
-    let r = radius + randomGaussian(0, noise);
-    let x = center.x + r * cos(angle);
-    let y = center.y + r * sin(angle);
-    points.push(new Point(createVector(x, y), defaultColor));
+    let p = center.copy()
+    let a1 = randomGaussian(0, 1);
+    let a2 = randomGaussian(0, 1);
+    p.add(p5.Vector.mult(pair.axis1, a1))
+     .add(p5.Vector.mult(pair.axis2, a2));
+    points.push(new Point(p, defaultColor));
   }
 }
 
@@ -150,6 +135,15 @@ class Cluster {
   }
 }
 
+function resetColorPicker() {
+  currentChoice = 0;
+}
+
+function pickColor() {
+  let c = colors[currentChoice];
+  currentChoice = (currentChoice+1) % colors.length;
+  return c;
+}
 
 function createClusters(centroids) {
   resetColorPicker();
@@ -245,28 +239,49 @@ function verifyTermination() {
 }
 
 function reset() {
-  clusters = [];
-  step = 0;
-  redraw();
-  for (let i = 0; i < points.length; i++) {
-    let p = points[i];
-    p.color = defaultColor;
-  }
-}
-
-function clearCanvas() {
   points = [];
   centroids = [];
-  reset();
+  clusters = [];
+
+  for (let i = 0; i < numClusters; i++) {
+    let center = randomVecInCanvas();
+    let radius = random(minClusterRadius, maxClusterRadius);
+    let numPoints = randint(minClusterPoints, maxClusterPoints);
+    pointCloud(center, radius, numPoints);
+  }
+
+  step = 0;
+  highlightStep(step);
+  redraw();
 }
 
-function createCentroids() {
+function generateCentroids() {
+  for (let i = 0; i < numClusters; i++) {
+    let centroid = randomVecInCanvas();
+    centroids.push(centroid);
+  }
   createClusters(centroids);
+}
+
+let stepToLineMap = {
+  0: 0,
+  1: 2,
+  2: 3,
+  3: 4,
+  4: 5,
+};
+
+function highlightStep(step) {
+  codeLines.forEach(line => line.classList.remove('highlight'));
+  let line = stepToLineMap[step];
+  if (line >= 0 && line < codeLines.length) {
+    codeLines[line].classList.add('highlight');
+  }
 }
 
 function nextStep() {
   if (step == 0) {
-    createCentroids();
+    generateCentroids();
     step = 1;
   } else if (step == 1) {
     assignPointsToCentroids();
@@ -284,17 +299,8 @@ function nextStep() {
   } else if (step = 4) {
     // do nothing?
   }
+  highlightStep(step);
   redraw();
-}
-
-function resetColorPicker() {
-  currentChoice = 0;
-}
-
-function pickColor() {
-  let c = colors[currentChoice];
-  currentChoice = (currentChoice+1) % colors.length;
-  return c;
 }
 
 function setup() {
@@ -305,6 +311,8 @@ function setup() {
   p5Canvas.style('z-index', '-1');
   p5Canvas.style('position', 'fixed');
 
+  codeLines = document.querySelectorAll('.code-line');
+
   document.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") reset();
     if (e.key === "ArrowDown") nextStep();
@@ -314,26 +322,8 @@ function setup() {
       const overlay = document.getElementById("help-overlay");
       overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
     }
-    if (e.key.toLowerCase() === "c") {
-      isCentroid = !isCentroid;
-    }
-    if (e.key.toLowerCase() === "l") {
-      clearCanvas();
-    }
-    if (e.key.toLowerCase() === "w") {
-      pointsPerClick = min(maxPerClick, pointsPerClick+1);
-    }
-    if (e.key.toLowerCase() === "s") {
-      pointsPerClick = max(minPerClick, pointsPerClick-1);
-    }
-    if (e.key.toLowerCase() === "a") {
-      brushSpread = max(minSpread, brushSpread-1);
-    }
-    if (e.key.toLowerCase() === "d") {
-      brushSpread = min(maxSpread, brushSpread+1);
-    }
   });
-  
+
   document.getElementById("help-close").addEventListener("click", () => {
     document.getElementById("help-overlay").style.display = "none";
   });
@@ -353,7 +343,10 @@ function setup() {
 
   defaultColor = color(192, 0, 0, defaultAlpha);
   defaultCentroidColor = color(0, 0, 0);
+
+  noLoop();
   frameRate(fps);
+  highlightStep(step);
   reset();
 }
 
@@ -370,7 +363,6 @@ function draw() {
   for (let i = 0; i < clusters.length; i++) {
     clusters[i].draw();
   }
-  bottomText(`dados por clique: ${pointsPerClick}, tamanho do pincel: ${brushSpread}, centroid: ${isCentroid}\n`);
 }
 
 function windowResized() {
@@ -380,40 +372,7 @@ function windowResized() {
   redraw();
 }
 
-function clickHandler(mouseX, mouseY) {
-  let pos = createVector(mouseX, mouseY)
-  if (isCentroid) {
-    // sempre queremos apenas um centroide.
-    centroids.push(pos);
-  } else {
-    if (pointsPerClick == 1) {
-      // queremos ser precisos nesse caso
-      points.push(new Point(pos, defaultColor));
-    } else {
-      for (let i = 0; i < pointsPerClick; i++) {
-        let r = createVector(random(-brushSpread, brushSpread), random(-brushSpread, brushSpread));
-        let newPos = p5.Vector.add(pos, r);
-        points.push(new Point(newPos, defaultColor));
-      }
-    }
-  }
-}
-
 function inBounds(x, y) {
   return x >= 0 && y >= 0 &&
          x <= width && y <= height;
-}
-
-function mousePressed() {
-  if (inBounds(mouseX, mouseY)) {
-    clickHandler(mouseX, mouseY);
-  }
-}
-
-function touchStarted() {
-  if (inBounds(mouseX, mouseY)) {
-    clickHandler(mouseX, mouseY);
-    return false;
-  }
-  return true;
 }

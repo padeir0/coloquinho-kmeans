@@ -1,36 +1,23 @@
-const circleSize = 30;
-const minClusterRadius = 30;
-const maxClusterRadius = 80;
-const minClusterPoints = 20;
-const maxClusterPoints = 50;
+const fps = 1;
+const circleSize = 20;
 const numClusters = 5;
-const fps = 20;
-const centerExclusionZoneRadius = 300;
+
+const minPointsPerCluster = 10;
+const maxPointsPerCluster = 20;
+
+const minInitialRadius = 30;
+const maxInitialRadius = 50;
+
+const maxRadius = maxInitialRadius;
+
+const centerExclusionZoneRadius = 500;
 const maxDistanceToCenter = centerExclusionZoneRadius + 50;
 
-const defaultAlpha = 64;
-const centroidAlpha = 250;
-
-let step = 0;
-let points = [];
-let centroids = [];
 let clusters = [];
-let defaultColor;
-let codeLines;
-let currentChoice = 0;
 
-class Point {
-  constructor (pos, color) {
-    this.pos = pos;
-    this.color = color;
-  }
-}
-
-function withAlpha(c, a) {
-  return color(red(c), green(c), blue(c), a);
-}
-
-function star(x, y, r) {
+function star(p, r) {
+  let x = p.x;
+  let y = p.y;
   const npoints = 8;
   const radius1 = r/2;
   const radius2 = radius1 / 2;
@@ -48,10 +35,6 @@ function star(x, y, r) {
   endShape(CLOSE);
 }
 
-function randint(lower, upper) {
-  return floor(random(lower, upper));
-}
-
 function randomOrthoPair(maxRadius) {
   let x = random(-maxRadius, maxRadius);
   let y = random(-maxRadius, maxRadius);
@@ -62,14 +45,20 @@ function randomOrthoPair(maxRadius) {
 
 function pointCloud(center, maxRadius, numPoints) {
   let pair = randomOrthoPair(maxRadius);
+  out = [];
   for (let i = 0; i < numPoints; i++) {
     let p = center.copy()
     let a1 = randomGaussian(0, 1);
     let a2 = randomGaussian(0, 1);
     p.add(p5.Vector.mult(pair.axis1, a1))
      .add(p5.Vector.mult(pair.axis2, a2));
-    points.push(new Point(p, defaultColor));
+    out.push(p);
   }
+  return out;
+}
+
+function randint(lower, upper) {
+  return floor(random(lower, upper));
 }
 
 function goodPosition(p) {
@@ -81,241 +70,89 @@ function goodPosition(p) {
          p.y < 0 || p.y > height;
 }
 
+// TODO: fix this mess, take the center of the screen and apply a
+// random angle to it plus some offset noise.
 function randomVecInCanvas() {
   let out = createVector(random(0, width), random(0, height));
-  while (goodPosition(out)) {
+  let i = 0;
+  while (goodPosition(out) && i < 20) {
     out = createVector(random(0, width), random(0, height));
+    i++;
   }
   return out;
 }
 
-function drawCentroid(pos, color) {
-  stroke(3);
-  fill(withAlpha(color, centroidAlpha));
-  star(pos.x, pos.y, circleSize*0.75);
-}
-
-function drawPoint(point) {
-  noStroke();
-  fill(point.color);
-  circle(point.pos.x, point.pos.y, circleSize)
-}
-
 class Cluster {
-  constructor (centroid, color) {
-    this.centroid = centroid;
-    this.centroidHistory = [centroid]
-    this.points = [];
-    this.color = color;
-    centroid.color = this.color;
+  constructor (center, numPoints, initialRadius) {
+    this.center = center;
+    this.points = pointCloud(center, initialRadius, numPoints);
+    this.centroid = this.findCentroid();
+    this.fade = max(0.1, 1 - (this.deviation() / maxRadius));
   }
 
-  addPoint(point) {
-    this.points.push(point);
-    point.color = this.color;
+  deviation() {
+    let out = 0;
+    for (let i = 0; i < this.points.length; i++) {
+      out += p5.Vector.dist(this.center, this.points[i]);
+    }
+    return out/this.points.length;
   }
 
-  updateCentroid(newPos) {
-    this.centroidHistory.push(newPos);
-    this.centroid = newPos;
+  findCentroid() {
+    let out = createVector(0, 0);
+    for (let i = 0; i < this.points.length; i++) {
+      let p = this.points[i];
+      out.add(p);
+    }
+    out.mult(1.0 / this.points.length);
+    return out;
   }
 
   draw() {
-    drawCentroid(this.centroid, this.color);
-    // draw centroid history
-    for (let i = this.centroidHistory.length -1; 0 < i; i--) {
-      let a = this.centroidHistory[i];
-      let b = this.centroidHistory[i-1];
-      line(a.x, a.y, b.x, b.y);
+    for (let i = 0; i < this.points.length; i++) {
+      let p = this.points[i];
+      noStroke();
+      fill(128, 0, 0, this.fade*192);
+      circle(p.x, p.y, circleSize);
     }
+    fill(0, 0, 128);
+    star(this.centroid, circleSize);
+    fill(128, 0, 0, this.fade*192);
   }
-
-  clear() {
-    this.points = [];
-  }
 }
 
-function resetColorPicker() {
-  currentChoice = 0;
+function newRandomCluster() {
+  let center = randomVecInCanvas();
+  let numPoints = randint(minPointsPerCluster, maxPointsPerCluster);
+  let initialRadius = randint(minInitialRadius, maxInitialRadius);
+  return new Cluster(center, numPoints, initialRadius);
 }
 
-function pickColor() {
-  let c = colors[currentChoice];
-  currentChoice = (currentChoice+1) % colors.length;
-  return c;
-}
-
-function createClusters(centroids) {
-  resetColorPicker();
+function generateClusters() {
   clusters = [];
-  for (let i = 0; i < centroids.length; i++) {
-    let cluster = new Cluster(centroids[i], pickColor());
-    clusters.push(cluster);
-  }
-}
-
-function clearClusters(clusters) {
-  for (let i = 0; i < clusters.length; i++) {
-    clusters[i].clear();
-  }
-}
-
-function nearestPoint(a) {
-  let nearest = null;
-  let minDistance = null;
-  for (let i = 0; i < points.length; i++) {
-    let distance = a.dist(points[i].pos);
-    if (minDistance == null || distance < minDistance) {
-      minDistance = distance;
-      nearest = points[i].pos;
-    }
-  }
-  return nearest;
-}
-
-function medianPoint(points) {
-  let avg = createVector(0, 0);
-  for (let i = 0; i < points.length; i++) {
-    avg.x += points[i].pos.x;
-    avg.y += points[i].pos.y;
-  }
-  avg.x = avg.x/points.length;
-  avg.y = avg.y/points.length;
-  return avg;
-}
-
-// atribui cada ponto ao cluster com centróide mais perto
-function assignPointsToCentroids() {
-  clearClusters(clusters);
-
-  for (let i = 0; i < points.length; i++) {
-    let closest = null;
-    let minDistance = null;
-    let point = points[i].pos;
-    for (let j = 0; j < clusters.length; j++) {
-      let centroid = clusters[j].centroid;
-      let distance = p5.Vector.dist(point, centroid);
-
-      if (minDistance == null || distance < minDistance) {
-        closest = clusters[j];
-        minDistance = distance;
-      }
-    }
-    closest.addPoint(points[i]);
-  }
-}
-
-// atualiza o centroide de cada cluster
-function updateClusterCentroids() {
-  for (let i = 0; i < clusters.length; i++) {
-    let pos;
-    if (clusters[i].points.length > 0) {
-      pos = medianPoint(clusters[i].points);
-    } else {
-      pos = nearestPoint(clusters[i].centroid, points);
-    }
-    clusters[i].updateCentroid(pos);
-  }
-}
-
-function closeEnough(a, b) {
-  return p5.Vector.dist(a, b) < 1;
-}
-
-function verifyTermination() {
-  for (let i = 0; i < clusters.length; i++) {
-    let cluster = clusters[i];
-    if (cluster.centroidHistory.length > 1) {
-      let a = cluster.centroidHistory[cluster.centroidHistory.length-1];
-      let b = cluster.centroidHistory[cluster.centroidHistory.length-2];
-      if (!closeEnough(a, b)) {
-        return false; // algum cluster ainda pode aproximar mais.
-      }
-    } else {
-      return false; // acabou de começar.
-    }
-  }
-  return true;
-}
-
-function reset() {
-  points = [];
-  centroids = [];
-  clusters = [];
-
   for (let i = 0; i < numClusters; i++) {
-    let center = randomVecInCanvas();
-    let radius = random(minClusterRadius, maxClusterRadius);
-    let numPoints = randint(minClusterPoints, maxClusterPoints);
-    pointCloud(center, radius, numPoints);
-  }
-
-  step = 0;
-  highlightStep(step);
-  redraw();
-}
-
-function generateCentroids() {
-  for (let i = 0; i < numClusters; i++) {
-    let centroid = randomVecInCanvas();
-    centroids.push(centroid);
-  }
-  createClusters(centroids);
-}
-
-let stepToLineMap = {
-  0: 0,
-  1: 2,
-  2: 3,
-  3: 4,
-  4: 5,
-};
-
-function highlightStep(step) {
-  codeLines.forEach(line => line.classList.remove('highlight'));
-  let line = stepToLineMap[step];
-  if (line >= 0 && line < codeLines.length) {
-    codeLines[line].classList.add('highlight');
+    clusters.push(newRandomCluster());
   }
 }
 
-function nextStep() {
-  if (step == 0) {
-    generateCentroids();
-    step = 1;
-  } else if (step == 1) {
-    assignPointsToCentroids();
-    step = 2;
-  } else if (step == 2) {
-    updateClusterCentroids();
-    step = 3;
-  } else if (step == 3) {
-    let finished = verifyTermination();
-    if (finished) {
-      step = 4;
-    } else {
-      step = 1;
-    }
-  } else if (step = 4) {
-    // do nothing?
-  }
-  highlightStep(step);
+function generateAndRedraw() {
+  generateClusters();
   redraw();
 }
 
 function setup() {
-  let p5Canvas = createCanvas(windowWidth, windowHeight);
-  p5Canvas.parent('canvas-container');
+  p5Canvas = createCanvas(windowWidth, windowHeight);
+  p5Canvas.parent("canvas-container");
 
   p5Canvas.position(0, 0);
   p5Canvas.style('z-index', '-1');
   p5Canvas.style('position', 'fixed');
 
-  codeLines = document.querySelectorAll('.code-line');
+  frameRate(fps);
+  generateClusters();
 
   document.addEventListener("keydown", e => {
-    if (e.key === "ArrowUp") reset();
-    if (e.key === "ArrowDown") nextStep();
+    if (e.key === "ArrowUp") generateAndRedraw();
     if (e.key === "ArrowLeft") location.assign("../page_2/index.html");
     if (e.key === "ArrowRight") location.assign("../page_4/index.html");
     if (e.key.toLowerCase() === "h") {
@@ -327,52 +164,18 @@ function setup() {
   document.getElementById("help-close").addEventListener("click", () => {
     document.getElementById("help-overlay").style.display = "none";
   });
-  
-  colors = [
-    color(230, 25, 75, defaultAlpha),
-    color(60, 180, 75, defaultAlpha),
-    color(255, 225, 25, defaultAlpha),
-    color(0, 130, 200, defaultAlpha),
-    color(205, 130, 48, defaultAlpha),
-    color(145, 30, 180, defaultAlpha),
-    color(70, 200, 200, defaultAlpha),
-    color(200, 50, 200, defaultAlpha),
-    color(200, 205, 60, defaultAlpha),
-    color(120, 120, 120, defaultAlpha)
-  ];
-
-  defaultColor = color(192, 0, 0, defaultAlpha);
-  defaultCentroidColor = color(0, 0, 0);
 
   noLoop();
-  frameRate(fps);
-  highlightStep(step);
-  reset();
 }
 
 function draw() {
-  background(220, 220, 220);
-  for (let i = 0; i < points.length; i++) {
-    let point = points[i];
-    drawPoint(point);
-  }
-  for (let i = 0; i < centroids.length; i++) {
-    let centroid = centroids[i];
-    drawCentroid(centroid, defaultCentroidColor);
-  }
-  for (let i = 0; i < clusters.length; i++) {
+  background(220);
+  for (let i = 0; i < numClusters; i++) {
     clusters[i].draw();
   }
 }
 
 function windowResized() {
-  let newWidth = windowWidth;
-  let newHeight = windowHeight;
-  resizeCanvas(newWidth, newHeight);
-  redraw();
-}
-
-function inBounds(x, y) {
-  return x >= 0 && y >= 0 &&
-         x <= width && y <= height;
+  resizeCanvas(windowWidth, windowHeight);
+  generateClusters();
 }

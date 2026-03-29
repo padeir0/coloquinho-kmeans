@@ -177,7 +177,7 @@ function setup() {
 
   document.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") debug();
-    if (e.key === "ArrowLeft") location.assign("../page_9/index.html");
+    if (e.key === "ArrowLeft") location.assign("../page_11/index.html");
     if (e.key.toLowerCase() === "h") {
       const overlay = document.getElementById("help-overlay");
       overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
