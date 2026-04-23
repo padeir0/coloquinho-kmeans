@@ -150,7 +150,7 @@ function setup() {
 
   document.addEventListener("keydown", e => {
     if (e.key === "ArrowUp") printClusters();
-    if (e.key === "ArrowRight") location.assign("../page_1/index.html");
+    if (e.key === "ArrowRight") location.assign("../page_0/index.html");
     if (e.key.toLowerCase() === "h") {
       const overlay = document.getElementById("help-overlay");
       overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";

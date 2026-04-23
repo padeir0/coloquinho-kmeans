@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Clustering e PCA</title>
+  <title>K-Means</title>
 
   <script>
     window.MathJax = {
@@ -49,6 +49,10 @@
     </table>
   </div>
 
+  <div class="text-container">
+    Mitigação: selecionar componentes principais, normalização.
+  </div>
+
   <div id="help-overlay">
     <div class="help-box">
       <div class="help-header">
@@ -66,7 +70,7 @@
     document.addEventListener("keydown", e => {
       if (e.key === "ArrowUp") reset();
       if (e.key === "ArrowLeft") location.assign("../page_9/index.html");
-      if (e.key === "ArrowRight") location.assign("../page_11/index.html");
+      if (e.key === "ArrowRight") location.assign("../page_X/index.html");
       if (e.key.toLowerCase() === "h") {
         const overlay = document.getElementById("help-overlay");
         overlay.style.display = (overlay.style.display === "flex") ? "none" : "flex";
