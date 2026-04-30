@@ -10,9 +10,11 @@ const maxInitialRadius = 50;
 
 const maxRadius = maxInitialRadius;
 
-const centerExclusionZoneRadius = 500;
+const centerExclusionZoneRadius = 550;
 const maxDistanceToCenter = centerExclusionZoneRadius + 50;
 
+let chosenVec = 0;
+let goodVecs = [];
 let clusters = [];
 
 function star(p, r) {
@@ -61,24 +63,9 @@ function randint(lower, upper) {
   return floor(random(lower, upper));
 }
 
-function goodPosition(p) {
-  let windowCenter = createVector(width/2, height/2);
-  let distToCenter = p5.Vector.dist(windowCenter, p);
-  return distToCenter < centerExclusionZoneRadius ||
-         distToCenter > maxDistanceToCenter ||
-         p.x < 0 || p.x > width ||
-         p.y < 0 || p.y > height;
-}
-
-// TODO: fix this mess, take the center of the screen and apply a
-// random angle to it plus some offset noise.
 function randomVecInCanvas() {
-  let out = createVector(random(0, width), random(0, height));
-  let i = 0;
-  while (goodPosition(out) && i < 20) {
-    out = createVector(random(0, width), random(0, height));
-    i++;
-  }
+  let out = goodVecs[chosenVec];
+  chosenVec = (chosenVec+1) % goodVecs.length;
   return out;
 }
 
@@ -129,6 +116,13 @@ function newRandomCluster() {
 }
 
 function generateClusters() {
+  let topLeft = createVector(maxRadius, maxRadius);
+  let topRight = createVector(width-maxRadius, maxRadius);
+  let bottomLeft = createVector(maxRadius, height-maxRadius);
+  let bottomRight = createVector(width-maxRadius, height-maxRadius);
+
+  goodVecs = [topLeft, topRight, bottomLeft, bottomRight];
+
   clusters = [];
   for (let i = 0; i < numClusters; i++) {
     clusters.push(newRandomCluster());
@@ -177,5 +171,5 @@ function draw() {
 
 function windowResized() {
   resizeCanvas(windowWidth, windowHeight);
-  generateClusters();
+  generateAndRedraw();
 }
